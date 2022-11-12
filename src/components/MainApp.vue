@@ -1,58 +1,79 @@
 <template>
-  <div class="hello">
-    <h1>{{ msg }}</h1>
-    <p>
-      For a guide and recipes on how to configure / customize this project,<br>
-      check out the
-      <a href="https://cli.vuejs.org" target="_blank" rel="noopener">vue-cli documentation</a>.
-    </p>
-    <h3>Installed CLI Plugins</h3>
-    <ul>
-      <li><a href="https://github.com/vuejs/vue-cli/tree/dev/packages/%40vue/cli-plugin-babel" target="_blank" rel="noopener">babel</a></li>
-      <li><a href="https://github.com/vuejs/vue-cli/tree/dev/packages/%40vue/cli-plugin-eslint" target="_blank" rel="noopener">eslint</a></li>
-    </ul>
-    <h3>Essential Links</h3>
-    <ul>
-      <li><a href="https://vuejs.org" target="_blank" rel="noopener">Core Docs</a></li>
-      <li><a href="https://forum.vuejs.org" target="_blank" rel="noopener">Forum</a></li>
-      <li><a href="https://chat.vuejs.org" target="_blank" rel="noopener">Community Chat</a></li>
-      <li><a href="https://twitter.com/vuejs" target="_blank" rel="noopener">Twitter</a></li>
-      <li><a href="https://news.vuejs.org" target="_blank" rel="noopener">News</a></li>
-    </ul>
-    <h3>Ecosystem</h3>
-    <ul>
-      <li><a href="https://router.vuejs.org" target="_blank" rel="noopener">vue-router</a></li>
-      <li><a href="https://vuex.vuejs.org" target="_blank" rel="noopener">vuex</a></li>
-      <li><a href="https://github.com/vuejs/vue-devtools#vue-devtools" target="_blank" rel="noopener">vue-devtools</a></li>
-      <li><a href="https://vue-loader.vuejs.org" target="_blank" rel="noopener">vue-loader</a></li>
-      <li><a href="https://github.com/vuejs/awesome-vue" target="_blank" rel="noopener">awesome-vue</a></li>
-    </ul>
+  <div class="main-div">
+    <div class="jacket-display">{{ answer }}</div>
+    <div class="precip-display">{{ alsoAnswer }}</div>
   </div>
 </template>
 
 <script>
 export default {
   name: 'MainApp',
+  data() {
+    return {
+      locInfo: null,
+      weatherInfo: null,
+      answer: null,
+      alsoAnswer: null
+    }
+  },
   props: {
-    msg: String
-  }
+  },
+  methods: {
+    recordPosition: async function(position) {
+      this.locInfo = position.coords;
+      const url = 'http://www.7timer.info/bin/api.pl?lon=' + this.locInfo.longitude + '&lat=' + this.locInfo.latitude + '&product=astro&output=json'
+      const response = await fetch(
+        url
+      );
+      await response.json().then((data) => this.weatherInfo = data.dataseries);
+    },
+    determineTemp: function(temp) {
+      if (temp < 0) {
+        this.answer = "YES, A HEAVY ONE";
+      } else if (temp < 8) {
+        this.answer = "YES, A MEDIUM ONE";
+      } else if (temp < 16) {
+        this.answer = "YES, A LIGHT ONE";
+      } else {
+        this.answer = "NO";
+      }
+    },
+    determinePrecip: function(precip) {
+      if (precip === 'rain') {
+        this.alsoAnswer = "Also maybe bring an umbrella";
+      } else if (precip === 'snow') {
+        this.alsoAnswer = 'Also keep in mind that it\'s snowing';
+      } else if (precip === 'none') {
+        this.alsoAnswer = 'It\'s dry out';
+      }
+    }
+  },
+  watch: {
+    weatherInfo() {
+      if (!this.weatherInfo[0]) {
+        return null;
+      } else {
+        this.determineTemp(this.weatherInfo[0].temp2m);
+        this.determinePrecip(this.weatherInfo[0].prec_type)
+      }
+    }
+  },
+  mounted() {
+    navigator.geolocation.getCurrentPosition(this.recordPosition);
+  },
 }
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
-h3 {
-  margin: 40px 0 0;
+.main-div {
+  text-align: center;
 }
-ul {
-  list-style-type: none;
-  padding: 0;
+
+.main-div .jacket-display {
+  font-size: 45px;
 }
-li {
-  display: inline-block;
-  margin: 0 10px;
-}
-a {
-  color: #42b983;
+.main-div .precip-display {
+  font-size: 40px;
 }
 </style>
