@@ -21,7 +21,7 @@ export default {
   methods: {
     recordPosition: async function(position) {
       this.locInfo = position.coords;
-      const url = 'http://www.7timer.info/bin/api.pl?lon=' + this.locInfo.longitude + '&lat=' + this.locInfo.latitude + '&product=astro&output=json'
+      const url = 'https://www.7timer.info/bin/api.pl?lon=' + this.locInfo.longitude + '&lat=' + this.locInfo.latitude + '&product=astro&output=json'
       const response = await fetch(
         url
       );
